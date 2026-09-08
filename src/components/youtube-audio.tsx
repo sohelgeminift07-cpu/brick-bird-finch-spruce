@@ -104,7 +104,6 @@ export function useOriginalAudio() {
   useEffect(() => {
     let cancelled = false;
     let player: YTPlayer | null = null;
-    let tries = 0;
 
     const start = () => {
       if (cancelled) return;

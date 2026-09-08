@@ -1,0 +1,6 @@
+{
+  "name": "ইয়া রব — কালামে ইকবাল",
+  "description": "আল্লামা ইকবালের দোয়া ইয়া রব দিল-এ-মুসলিম কো — বাংলায় বিশাল উপস্থাপনা, শেরে শেরে অর্থসহ।",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
