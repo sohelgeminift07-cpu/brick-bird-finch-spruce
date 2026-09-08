@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "ইয়া রব — কালামে ইকবাল",
+      "hasCanvas": false,
+      "bodyTextLen": 294,
+      "bodyTextHash": "91f5f9cf1f0ec03384320f983311657353ca99c1f566b3a0922abf60c7cc9fee",
+      "bodyTextPrefix": "بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ কালামে ইকবাল ইয়া রব দিল-",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "ইয়া রব — কালামে ইকবাল",
+      "hasCanvas": false,
+      "bodyTextLen": 294,
+      "bodyTextHash": "91f5f9cf1f0ec03384320f983311657353ca99c1f566b3a0922abf60c7cc9fee",
+      "bodyTextPrefix": "بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ কালামে ইকবাল ইয়া রব দিল-",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}
