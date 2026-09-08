@@ -107,60 +107,49 @@ export function useOriginalAudio() {
     let tries = 0;
 
     const start = () => {
-      const box = boxRef.current;
-      if (!box) {
-        if (!cancelled && tries++ < 30) requestAnimationFrame(start);
-        return;
-      }
+      if (cancelled) return;
 
-      loadYouTubeApi()
-        .then((YT) => {
-          if (cancelled) return;
-          const target = document.createElement("div");
-          target.style.width = "100%";
-          target.style.height = "100%";
-          box.appendChild(target);
-          player = new YT.Player(target, {
-            videoId: YOUTUBE_ID,
-            width: "100%",
-            height: "100%",
-            playerVars: {
-              autoplay: 0,
-              controls: 0,
-              disablekb: 1,
-              fs: 0,
-              modestbranding: 1,
-              rel: 0,
-              playsinline: 1,
-              cc_load_policy: 0,
-              iv_load_policy: 3,
-              origin: window.location.origin,
-            },
-            events: {
-              onReady: () => {
-                if (!cancelled) setReady(true);
-              },
-              onStateChange: (e) => {
-                if (cancelled) return;
-                setPlaying(e.data === PLAYING);
-                if (e.data === ENDED) {
-                  setMode("idle");
-                  modeRef.current = "idle";
-                  clipEndRef.current = null;
-                  onClipEndRef.current?.();
-                  onClipEndRef.current = null;
-                }
-              },
-              onError: () => {
-                if (!cancelled) setError("অডিও লোড হয়নি");
-              },
-            },
-          });
-          playerRef.current = player;
-        })
-        .catch(() => {
-          if (!cancelled) setError("অরিজিনাল অডিও লোড হয়নি");
-        });
+      const localAudio = new Audio("/audio/iqbal-recitation.m4a");
+      localAudio.preload = "auto";
+      localAudio.addEventListener("canplay", () => {
+        if (!cancelled) setReady(true);
+      });
+      localAudio.addEventListener("play", () => {
+        if (!cancelled) setPlaying(true);
+      });
+      localAudio.addEventListener("pause", () => {
+        if (!cancelled) setPlaying(false);
+      });
+      localAudio.addEventListener("ended", () => {
+        if (cancelled) return;
+        setPlaying(false);
+        setMode("idle");
+        modeRef.current = "idle";
+        clipEndRef.current = null;
+        onClipEndRef.current?.();
+        onClipEndRef.current = null;
+      });
+      localAudio.addEventListener("error", () => {
+        if (!cancelled) setError("অডিও লোড হয়নি");
+      });
+
+      player = {
+        playVideo: () => void localAudio.play(),
+        pauseVideo: () => localAudio.pause(),
+        seekTo: (seconds: number) => {
+          localAudio.currentTime = seconds;
+        },
+        getCurrentTime: () => localAudio.currentTime,
+        getPlayerState: () => (localAudio.paused ? 2 : PLAYING),
+        getDuration: () => localAudio.duration || AUDIO_DURATION,
+        destroy: () => {
+          localAudio.pause();
+          localAudio.removeAttribute("src");
+          localAudio.load();
+        },
+      };
+      playerRef.current = player;
+      localAudio.load();
     };
 
     start();
