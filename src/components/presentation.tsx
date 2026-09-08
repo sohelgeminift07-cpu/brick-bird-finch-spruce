@@ -14,6 +14,7 @@ export function Presentation() {
   const [follow, setFollow] = useState(false);
   const [outline, setOutline] = useState(false);
   const [activeLine, setActiveLine] = useState<1 | 2 | null>(null);
+  const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
   const touch = useRef<{ x: number; y: number } | null>(null);
   const followRef = useRef(false);
   const slideIdRef = useRef("hero");
@@ -76,12 +77,39 @@ export function Presentation() {
   const playLine = useCallback(
     (id: string, line: 1 | 2) => {
       const clip = clipForLine(id, line);
-      if (!clip) return;
       setFollow(false);
       setActiveLine(line);
-      playClip(clip.start, clip.end, () => {
+
+      window.speechSynthesis.cancel();
+      speechRef.current = null;
+
+      if (clip) {
+        playClip(clip.start, clip.end, () => {
+          if (slideIdRef.current === id) setActiveLine(null);
+        });
+        return;
+      }
+
+      const source = SLIDES.find((item) => item.id === id);
+      const text = line === 1 ? source?.urdu : source?.urdu2;
+      if (!text || !window.speechSynthesis) {
+        setActiveLine(null);
+        return;
+      }
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "ur-PK";
+      utterance.rate = 0.82;
+      utterance.onend = () => {
+        speechRef.current = null;
         if (slideIdRef.current === id) setActiveLine(null);
-      });
+      };
+      utterance.onerror = () => {
+        speechRef.current = null;
+        if (slideIdRef.current === id) setActiveLine(null);
+      };
+      speechRef.current = utterance;
+      window.speechSynthesis.speak(utterance);
     },
     [playClip],
   );
@@ -168,6 +196,8 @@ export function Presentation() {
 
   const togglePlay = () => {
     if (playing || follow) {
+      window.speechSynthesis.cancel();
+      speechRef.current = null;
       pause();
       setFollow(false);
       return;
@@ -180,6 +210,8 @@ export function Presentation() {
   };
 
   const startAlong = () => {
+    window.speechSynthesis.cancel();
+    speechRef.current = null;
     setFollow(false);
     playAlong(26);
   };
@@ -480,70 +512,44 @@ function VerseSlide({
       </button>
       <Kicker>{slide.kicker ?? ""}</Kicker>
       <h2 className="mt-2 text-2xl font-semibold text-cream md:text-4xl">{slide.title}</h2>
-      {hasAudio ? (
-        <>
-          <LineButton
-            dir="rtl"
-            live={activeLine === 1}
-            onPlay={() => onPlayLine(1)}
-            className="font-ur mt-5 max-w-3xl text-xl leading-loose md:text-3xl"
-          >
-            {slide.urdu}
-          </LineButton>
-          <LineButton
-            dir="rtl"
-            live={activeLine === 2}
-            onPlay={() => onPlayLine(2)}
-            className="font-ur mt-1 max-w-3xl text-lg leading-loose md:text-2xl"
-          >
-            {slide.urdu2}
-          </LineButton>
-        </>
-      ) : (
-        <>
-          <p className="font-ur mt-5 max-w-3xl text-xl leading-loose text-gold-bright md:text-3xl" dir="rtl">
-            {slide.urdu}
-          </p>
-          <p className="font-ur mt-1 max-w-3xl text-lg leading-loose text-gold md:text-2xl" dir="rtl">
-            {slide.urdu2}
-          </p>
-        </>
-      )}
+      <LineButton
+        dir="rtl"
+        live={activeLine === 1}
+        onPlay={() => onPlayLine(1)}
+        className="font-ur mt-5 max-w-3xl text-xl leading-loose md:text-3xl"
+      >
+        {slide.urdu}
+      </LineButton>
+      <LineButton
+        dir="rtl"
+        live={activeLine === 2}
+        onPlay={() => onPlayLine(2)}
+        className="font-ur mt-1 max-w-3xl text-lg leading-loose md:text-2xl"
+      >
+        {slide.urdu2}
+      </LineButton>
       <div className="my-5">
         <GoldDivider />
       </div>
-      {hasAudio ? (
-        <>
-          <LineButton live={activeLine === 1} onPlay={() => onPlayLine(1)} className="max-w-2xl text-base md:text-xl">
-            {slide.bangla}
-          </LineButton>
-          <LineButton
-            live={activeLine === 2}
-            onPlay={() => onPlayLine(2)}
-            className="mt-1 max-w-2xl text-sm text-gold-bright md:text-lg"
-          >
-            {slide.bangla2}
-          </LineButton>
-        </>
-      ) : (
-        <>
-          <p className="max-w-2xl text-base leading-relaxed text-cream md:text-xl">{slide.bangla}</p>
-          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-gold-bright md:text-lg">{slide.bangla2}</p>
-        </>
-      )}
+      <LineButton live={activeLine === 1} onPlay={() => onPlayLine(1)} className="max-w-2xl text-base md:text-xl">
+        {slide.bangla}
+      </LineButton>
+      <LineButton
+        live={activeLine === 2}
+        onPlay={() => onPlayLine(2)}
+        className="mt-1 max-w-2xl text-sm text-gold-bright md:text-lg"
+      >
+        {slide.bangla2}
+      </LineButton>
       {slide.meaning ? (
         <p className="mt-4 max-w-2xl rounded-lg bg-ink/50 px-4 py-3 text-sm leading-relaxed text-muted shadow-gold md:text-base">
           {slide.meaning}
         </p>
       ) : null}
-      {hasAudio ? (
-        <p className="mt-3 flex items-center gap-1.5 text-xs text-gold">
+      <p className="mt-3 flex items-center gap-1.5 text-xs text-gold">
           <Volume2 className="size-3.5" />
-          লাইনে ট্যাপ করলে অরিজিনাল কণ্ঠ বাজবে
+          লাইনে ট্যাপ করলে অডিও বাজবে
         </p>
-      ) : (
-        <p className="mt-3 text-xs text-muted">এই শেরটি এই কণ্ঠে গাওয়া হয়নি — পড়ে শুনুন</p>
-      )}
     </div>
   );
 }
