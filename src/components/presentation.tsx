@@ -729,7 +729,7 @@ function Outline({
               >
                 <span className="w-8 text-sm text-gold tabular-nums">{toBn(i + 1)}</span>
                 <span className="flex-1 text-sm md:text-base">{s.outline}</span>
-                {verseClip(s.id) || s.id === "title" || s.id === "listen" ? (
+                {s.kind === "verse" || s.id === "title" || s.id === "listen" ? (
                   <Volume2 className="size-3.5 text-gold" />
                 ) : null}
               </button>
