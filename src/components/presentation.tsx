@@ -15,6 +15,7 @@ export function Presentation() {
   const [outline, setOutline] = useState(false);
   const [activeLine, setActiveLine] = useState<1 | 2 | null>(null);
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const navigationAudioRef = useRef(false);
   const touch = useRef<{ x: number; y: number } | null>(null);
   const followRef = useRef(false);
   const slideIdRef = useRef("hero");
@@ -36,12 +37,17 @@ export function Presentation() {
     (nextIndex: number, direction: "next" | "prev") => {
       const clamped = Math.max(0, Math.min(last, nextIndex));
       if (clamped === index) return;
+      navigationAudioRef.current = true;
+      window.speechSynthesis.cancel();
+      speechRef.current = null;
+      pause();
+      setFollow(false);
       setDir(direction);
       setIndex(clamped);
       setOutline(false);
       setActiveLine(null);
     },
-    [index, last],
+    [index, last, pause],
   );
 
   const next = useCallback(() => go(index + 1, "next"), [go, index]);
@@ -113,6 +119,17 @@ export function Presentation() {
     },
     [playClip],
   );
+
+  useEffect(() => {
+    if (!navigationAudioRef.current) return;
+    navigationAudioRef.current = false;
+
+    if (slide.kind === "verse") {
+      playLine(slide.id, 1);
+    } else if (slide.id === "title" || slide.id === "close") {
+      playLine("v1", 1);
+    }
+  }, [index, playLine, slide.id, slide.kind]);
 
   const playVerse = useCallback(
     (id: string) => {
